@@ -46,7 +46,7 @@ pub fn parse_palette(path: &std::path::Path) -> Result<Palette, String> {
                     r: 0,
                     g: 0,
                     b: 0,
-                    name: Some("transparent".to_string()),
+                    name: Some("ignore".to_string()),
                 });
             }
         } else if let Some(rest) = line.strip_prefix("Columns:") {

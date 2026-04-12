@@ -10,7 +10,7 @@ pub fn ui(frame: &mut Frame, palette: &Palette) {
 
     // Info:
     let palette_name = &palette.name;
-    let info = Text::raw(format!("Palette: {}", palette_name));
+    let info = Text::raw(format!("  Palette: {}", palette_name));
     frame.render_widget(info, layout[0]);
 
     // visuals:
@@ -25,7 +25,9 @@ pub fn ui(frame: &mut Frame, palette: &Palette) {
         for col in 0..columns {
             let idx = row * columns + col;
 
-            if let Some(colour) = palette.colours.get(idx) {
+            if let Some(colour) = palette.colours.get(idx)
+                && colour.name.clone().unwrap_or("".to_string()) != "ignore"
+            {
                 let style = Style::default().bg(Color::Rgb(colour.r, colour.g, colour.b));
                 spans.push(Span::styled("  ", style));
             } else {
@@ -37,6 +39,6 @@ pub fn ui(frame: &mut Frame, palette: &Palette) {
         lines.push(Line::from(spans));
     }
 
-    let paragraph = Paragraph::new(lines);
+    let paragraph = Paragraph::new(lines).block(Block::new().padding(Padding::proportional(1)));
     frame.render_widget(paragraph, layout[1]);
 }
