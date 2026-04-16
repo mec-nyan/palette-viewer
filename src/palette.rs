@@ -1,5 +1,7 @@
 use std::fs;
 
+use color_eyre::eyre::eyre;
+
 #[derive(Debug)]
 pub struct Colour {
     // TODO: Remove public accessor and add corresponding methods.
@@ -17,13 +19,13 @@ pub struct Palette {
     pub colours: Vec<Colour>,
 }
 
-pub fn parse_palette(path: &std::path::Path) -> Result<Palette, String> {
-    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+pub fn parse_palette(path: &std::path::Path) -> color_eyre::Result<Palette> {
+    let content = fs::read_to_string(path)?;
     let mut lines = content.lines();
 
     // check palette header
     if lines.next() != Some("GIMP Palette") {
-        return Err("Not a gimp palette.".to_string());
+        return Err(eyre!("Not a gimp palette."));
     }
 
     let mut name = String::new();

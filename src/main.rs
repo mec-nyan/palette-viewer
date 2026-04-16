@@ -1,29 +1,46 @@
 //  ░░░░░█▀█░█▀█░█░░░█▀▀░▀█▀░▀█▀░█▀▀░░░█░█░▀█▀░█▀▀░█░█░█▀▀░█▀▄░░░░  //
 //  ░░░░░█▀▀░█▀█░█░░░█▀▀░░█░░░█░░█▀▀░░░▀▄▀░░█░░█▀▀░█▄█░█▀▀░█▀▄░░░░  //
 //  ░░░░░▀░░░▀░▀░▀▀▀░▀▀▀░░▀░░░▀░░▀▀▀░░░░▀░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░░░░  //
+//
+// Palette viewer
+//
+// View GPL palette files on your terminal, plus much more!
+//
+// Wishlist:
+// - Work in both inline and full screen modes.
+// - Show full palette or sections of it.
+// - Show colour information (hex, rgb, etc).
+// - Select colours.
+// - Allow for foreground and background selection.
+// - Display an example of currently selected colour(s).
+// - Yank to clipboard, select what to yank (again, hex, rgb, etc).
+// - Move around swatches.
+//
+// Implementation:
+//   Try to make a clean implementation using the ELM architecture (TEA).
+//
 
+mod app;
 mod palette;
 mod view;
+
+use crate::app::app;
 
 use clap::Parser;
 use std::path::PathBuf;
 
 use color_eyre::install;
-use ratatui::{
-    DefaultTerminal, Frame,
-    crossterm::event::{self, Event},
-};
 
-use crate::{
-    palette::{Palette, parse_palette},
-    view::ui,
-};
+use crate::palette::parse_palette;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "View GIMP palettes in the terminal")]
 struct Args {
-    // Path to the selected palette.
-    // TOOD: Maybe list available palettes.
+    /// View palette in full screen mode
+    #[arg(short, long)]
+    full_screen: bool,
+
+    /// Path to the selected palette.
     path: PathBuf,
 }
 
@@ -32,27 +49,9 @@ fn main() -> color_eyre::Result<()> {
 
     let args = Args::parse();
 
-    let palette = parse_palette(&args.path);
-    match palette {
-        Ok(palette) => {
-            ratatui::run(|terminal| app(terminal, palette))?;
-        }
-        Err(_) => {
-            panic!("Not a GIMP palette!");
-        }
-    }
+    let palette = parse_palette(&args.path)?;
+
+    ratatui::run(|terminal| app(terminal, palette, args.full_screen))?;
 
     Ok(())
-}
-
-fn app(terminal: &mut DefaultTerminal, palette: Palette) -> std::io::Result<()> {
-    loop {
-        terminal.draw(|frame| {
-            ui(frame, &palette);
-        })?;
-
-        if event::read()?.is_key_press() {
-            break Ok(());
-        }
-    }
 }
